@@ -12,6 +12,7 @@ import (
 	"path"
 	"strconv"
 	"sync"
+	"time"
 
 	"github.com/BurntSushi/toml"
 	_ "github.com/go-sql-driver/mysql"
@@ -215,7 +216,7 @@ func main() {
 	archivesPath := path.Join(config.BackupPath, "archive")
 	os.MkdirAll(archivesPath, 0777)
 
-	archivePath := path.Join(archivesPath, "backup-2006-01-02-15-04-05.tar.gz")
+	archivePath := path.Join(archivesPath, time.Now().Format("backup-2006-01-02-15-04-05.tar.gz"))
 	archive, err := os.Create(archivePath)
 	checkErr(err)
 	defer archive.Close()
