@@ -10,6 +10,7 @@ import (
 	"log"
 	"os"
 	"path"
+	"path/filepath"
 	"strconv"
 	"sync"
 	"time"
@@ -110,8 +111,8 @@ func ordersFetcher(dsns []string) <-chan order {
 	return orders
 }
 
-func addFileToArchive(tw *tar.Writer, path string) error {
-	file, err := os.Open(path)
+func addFileToArchive(tw *tar.Writer, filePath string) error {
+	file, err := os.Open(filePath)
 	if err != nil {
 		return err
 	}
@@ -119,7 +120,7 @@ func addFileToArchive(tw *tar.Writer, path string) error {
 	if stat, err := file.Stat(); err == nil {
 		// now lets create the header as needed for this file within the tarball
 		header := new(tar.Header)
-		header.Name = path
+		header.Name = filepath.Base(filePath)
 		header.Size = stat.Size()
 		header.Mode = int64(stat.Mode())
 		header.ModTime = stat.ModTime()
@@ -148,7 +149,7 @@ func main() {
 	)
 
 	flag.StringVar(&backupPath,
-		"backup",
+		"backup-path",
 		"./",
 		"go-mysql-backup-example backup path",
 	)
@@ -209,8 +210,8 @@ func main() {
 	}()
 
 	backupers.Wait()
-	log.Println("Backup done.")
-	log.Printf("Backuped %d users and %d orders.", usersCount, ordersCount)
+	log.Printf("Backup done at '%s'.\n", config.BackupPath)
+	log.Printf("Backuped %d users and %d orders.\n", usersCount, ordersCount)
 	log.Println("Archive started...")
 
 	archivesPath := path.Join(config.BackupPath, "archive")
@@ -227,5 +228,5 @@ func main() {
 	checkErr(addFileToArchive(archiveTar, usersCsvPath))
 	checkErr(addFileToArchive(archiveTar, ordersCsvPath))
 
-	log.Println("Archive done")
+	log.Printf("Archive done at '%s'\n", archivePath)
 }
